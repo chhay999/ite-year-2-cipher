@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Encryption and Decryption Demo</title>
+    
     <style>
         * {
             margin: 0;
@@ -12,6 +13,7 @@
         }
 
         body {
+            text-align: center;
             font-family: 'bold', serif;
             line-height: 1.6;
             color: #333;
@@ -129,30 +131,32 @@
             margin: 8px 0;
         }
     </style>
+    
 </head>
-<body>
+<body class="text-center">
     <h1>ENCRYPTION AND DECRYPTION DEMO</h1>
     
     <p style="text-align: center; margin: 20px 0;">
-        <strong>submitted to</strong><br>
-        Mr. LIM Seyha<br>
-        Mathematic Lecturer, Royal University of Phnom Penh, Phnom Penh<br><br>
-        April 22, 2025<br><br>
-        <strong>by</strong><br>
-        Team: 1. Kong borey 2. Sorn Sreyvy 3. Sok Engchhay 4. Sor sovanchhay <br>5. Tuch panha 6. Soy Rosa 7. Heng chanvireakyuth <br>
+        <br><strong style="font-size: 35px;"> Royal University of Phnom Penh, Phnom Penh</strong><br>
+        <image src= "https://www.rupp.edu.kh/logo/rupp_logo.png" alt="RUPP Logo" style="width: 150px; margin: 20px 0;"><br>
+             28 february 2026<br><br>
+            <strong style="font-size: 20px;">submitted to : 
+            Mr. LIM Seyha</strong> (Mathematic Lecturer) <br><br>
+        <strong>by Team : </strong><br>
+        1. Kong borey 2. Sorn Sreyvy 3. Sok Engchhay 4. Sor sovanchhay <br>5. Tuch panha 6. Soy Rosa 7. Heng chanvireakyuth <br>
     </p>
 
     <p>This demonstration presents applications of number theory, including classical encryption-decryption methods and the RSA algorithm. In this report, I will describe the algorithm I developed and the work I have conducted.</p>
 
-    <h2>I. Classical Cryptography</h2>
+    <h2 style="text-align: left;">1. Classical Cryptography</h2>
 
-    <h3>I.I. Caesar Cipher</h3>
+    <h3 style="text-align: left; margin-left: 30px;">1.1 Caesar Cipher</h3>
     
     <p>One of the earliest and most well-known forms of cryptography was developed by Emperor Julius Caesar. During times of war, he needed a way to send secret messages to his generals. His solution was simple but effective: shift each letter in the alphabet by three positions. For example, the letter A becomes D, B becomes E, and so on. This technique came to be known as the <em>Caesar Cipher</em>.</p>
 
     <div class="info-box">
         <p>Emperor Julius Caesar made his messages secret by shifting each letter three positions forward in the alphabet. The algorithm to encrypt a message works like this:</p>
-        <ol>
+        <ol style="text-align: left;">
             <li><strong>Assign numbers to each letter:</strong> A → 00, B → 01, C → 02, ... Z → 25</li>
             <li><strong>Convert the plaintext into numbers</strong></li>
             <li><strong>Encrypt the numbers by adding 3 to each</strong></li>
@@ -170,7 +174,7 @@
         <div class="result" id="caesarResult">No Result</div>
     </div>
 
-    <h3>I.II. General Shift Cipher</h3>
+    <h3 style="text-align: left; margin-left: 30px;">1.2 General Shift Cipher</h3>
     <p>The General Shift Cipher is a more advanced version of the Caesar Cipher. Instead of a fixed shift of three positions, it allows for any integer value as the shift. This means that you can choose any number to shift the letters in the alphabet, making it more versatile and secure.</p>
 
     <h4>General Shift Cipher Demo</h4>
@@ -185,7 +189,7 @@
         <div class="result" id="shiftResult">No Result</div>
     </div>
 
-    <h3>I.III. Affine Cipher</h3>
+    <h3 style="text-align: left; margin-left: 30px;">1.3 Affine Cipher</h3>
     <p>The Affine Cipher is a more complex encryption method that combines both a shift and a multiplication operation. It uses two keys: one for the shift and another for the multiplication. The formula for encryption is E(x) = (ax + b) mod 26, where 'a' and 'b' are the keys, and 'x' is the numerical representation of the letter.</p>
 
     <h4>Affine Cipher Demo</h4>
@@ -202,7 +206,7 @@
         <div class="result" id="affineResult">No Result</div>
     </div>
 
-    <h3>I.IV. Transposition Cipher</h3>
+    <h3 style="text-align: left; margin-left: 30px;">1.4 Transposition Cipher</h3>
     <p>In the fascinating world of cryptography, transposition ciphers stand out as one of the oldest and simplest forms of encryption. Rather than changing the actual letters or symbols (as substitution ciphers do), transposition ciphers rearrange the positions of the characters according to a specific system, creating a ciphertext that hides the original message.</p>
 
     <h4>Transposition Cipher Demo</h4>
@@ -216,12 +220,12 @@
         <div class="result" id="transResult">No Result</div>
     </div>
 
-    <h2>II. RSA</h2>
+    <h2 style="text-align: left;">2. RSA</h2>
 
-    <h3>II.I. RSA Cryptography</h3>
+    <h3 style="text-align: left; margin-left: 30px;">2.1 RSA Cryptography</h3>
     <p>RSA (Rivest-Shamir-Adleman) is a widely used asymmetric encryption algorithm that relies on the mathematical properties of prime numbers. It was invented in 1977 by Ron Rivest, Adi Shamir, and Leonard Adleman. RSA is based on the difficulty of factoring large composite numbers into their prime factors.</p>
 
-    <h4>II.I.I RSA Keygen Demo</h4>
+    <h4 style="text-align: left; margin-left: 30px;">2.1.1 RSA Keygen Demo</h4>
     <div class="demo-section">
         <label>Enter the first prime number p:</label>
         <input type="number" id="rsaP" value="61">
@@ -231,7 +235,7 @@
         <div class="result" id="rsaKeygenResult">No Result</div>
     </div>
 
-    <h4>II.I.II RSA Encryption Demo</h4>
+    <h4 style="text-align: left; margin-left: 30px;">2.1.2 RSA Encryption Demo</h4>
     <div class="demo-section">
         <label>Enter your text (Plain text or Cipher text):</label>
         <textarea id="rsaEncInput"></textarea>
@@ -243,7 +247,7 @@
         <div class="result" id="rsaEncResult">No Result</div>
     </div>
 
-    <h4>II.I.III RSA Decryption Demo</h4>
+    <h4 style="text-align: left; margin-left: 30px;">2.1.3 RSA Decryption Demo</h4>
     <div class="demo-section">
         <label>Enter your text (Plain text or Cipher text):</label>
         <textarea id="rsaDecInput"></textarea>
@@ -255,7 +259,7 @@
         <div class="result" id="rsaDecResult">No Result</div>
     </div>
 
-    <h2>III. Miscellaneous</h2>
+
     <p>Check my repository for codes: <a href="https://chhay999.github.io/ite-year-2-cipher/" target="_blank">https://chhay999.github.io/ite-year-2-cipher/</a></p>
 
     <script>
