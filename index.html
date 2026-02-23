@@ -1,531 +1,1072 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Encryption and Decryption Demo</title>
-    
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cryptography Demo — RUPP 2026</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,300;12..96,500;12..96,700;12..96,800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --ink: #0a0a0a;
+      --paper: #f5f2eb;
+      --paper2: #ede9df;
+      --cream: #e8e3d7;
+      --accent: #c94a1f;
+      --accent2: #1f4fc9;
+      --accent3: #1a8a52;
+      --muted: #7a7468;
+      --border: #c8c3b5;
+      --mono: 'DM Mono', monospace;
+      --sans: 'Bricolage Grotesque', sans-serif;
+    }
 
-        body {
-            text-align: center;
-            font-family: 'bold', serif;
-            line-height: 1.6;
-            color: #333;
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #f9f9f9;
-        }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
 
-        h1 {
-            text-align: center;
-            color: #2c3e50;
-            margin: 30px 0;
-            font-size: 2.5em;
-        }
+    body {
+      background: var(--paper);
+      color: var(--ink);
+      font-family: var(--sans);
+      min-height: 100vh;
+      font-size: 15px;
+    }
 
-        h2 {
-            color: #34495e;
-            margin: 40px 0 20px 0;
-            font-size: 1.8em;
-            border-bottom: 2px solid #3498db;
-            padding-bottom: 10px;
-        }
+    /* ---- NOISE TEXTURE OVERLAY ---- */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      opacity: 0.035;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      background-size: 200px 200px;
+      pointer-events: none;
+      z-index: 999;
+    }
 
-        h3 {
-            color: #2c3e50;
-            margin: 30px 0 15px 0;
-            font-size: 1.4em;
-        }
+    /* ---- LAYOUT ---- */
+    .layout {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      min-height: 100vh;
+    }
 
-        h4 {
-            color: #555;
-            margin: 20px 0 10px 0;
-            font-size: 1.2em;
-        }
+    /* ---- SIDEBAR ---- */
+    aside {
+      border-right: 1.5px solid var(--border);
+      padding: 40px 28px;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
 
-        p {
-            margin: 15px 0;
-            text-align: justify;
-        }
+    .logo-area {
+      margin-bottom: 40px;
+    }
 
-        .demo-section {
-            background: white;
-            padding: 25px;
-            margin: 20px 0;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
+    .logo-tag {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--muted);
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
 
-        textarea {
-            width: 100%;
-            padding: 12px;
-            margin: 10px 0;
-            border: 2px solid #ddd;
-            border-radius: 5px;
-            font-family: monospace;
-            font-size: 14px;
-            resize: vertical;
-            min-height: 80px;
-        }
+    .logo-tag::before {
+      content: '';
+      display: block;
+      width: 20px;
+      height: 1px;
+      background: var(--muted);
+    }
 
-        input[type="number"] {
-            width: 100%;
-            padding: 10px;
-            margin: 8px 0;
-            border: 2px solid #ddd;
-            border-radius: 5px;
-            font-size: 14px;
-        }
+    h1.logo-title {
+      font-size: 1.35rem;
+      font-weight: 800;
+      line-height: 1.2;
+      letter-spacing: -0.03em;
+    }
 
-        button {
-            background-color: #3498db;
-            color: white;
-            padding: 12px 24px;
-            margin: 8px 5px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 15px;
-            transition: background-color 0.3s;
-        }
+    h1.logo-title em {
+      font-style: normal;
+      color: var(--accent);
+    }
 
-        button:hover {
-            background-color: #2980b9;
-        }
+    .sidebar-section {
+      margin: 32px 0 12px;
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--muted);
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+    }
 
-        button:active {
-            transform: scale(0.98);
-        }
+    .nav-link {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 12px;
+      border-radius: 6px;
+      font-size: 13.5px;
+      font-weight: 500;
+      color: var(--ink);
+      cursor: pointer;
+      transition: background 0.15s;
+      margin: 2px 0;
+      border: none;
+      background: none;
+      width: 100%;
+      text-align: left;
+      font-family: var(--sans);
+    }
 
-        .result {
-            background-color: #ecf0f1;
-            padding: 15px;
-            margin: 15px 0;
-            border-radius: 5px;
-            border-left: 4px solid #3498db;
-            min-height: 50px;
-            font-family: monospace;
-            word-wrap: break-word;
-        }
+    .nav-link:hover { background: var(--paper2); }
+    .nav-link.active {
+      background: var(--ink);
+      color: var(--paper);
+    }
 
-        .info-box {
-            background-color: #e8f4f8;
-            padding: 15px;
-            margin: 15px 0;
-            border-radius: 5px;
-            border-left: 4px solid #3498db;
-        }
+    .nav-link .nav-icon {
+      width: 22px;
+      height: 22px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      background: rgba(0,0,0,0.06);
+      flex-shrink: 0;
+    }
 
-        ol {
-            margin: 15px 0 15px 30px;
-        }
+    .nav-link.active .nav-icon {
+      background: rgba(255,255,255,0.15);
+    }
 
-        li {
-            margin: 8px 0;
-        }
-    </style>
-    
+    .sidebar-footer {
+      margin-top: auto;
+      padding-top: 24px;
+      border-top: 1px solid var(--border);
+    }
+
+    .team-list {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted);
+      line-height: 2;
+    }
+
+    .team-list strong {
+      display: block;
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+      color: var(--ink);
+    }
+
+    .prof-tag {
+      margin-top: 12px;
+      display: inline-block;
+      background: var(--ink);
+      color: var(--paper);
+      font-family: var(--mono);
+      font-size: 10px;
+      padding: 4px 10px;
+      border-radius: 4px;
+      letter-spacing: 0.05em;
+    }
+
+    /* ---- MAIN CONTENT ---- */
+    main {
+      padding: 50px 56px 80px;
+      max-width: 760px;
+    }
+
+    /* ---- PAGE HEADER ---- */
+    .page-header {
+      margin-bottom: 60px;
+      padding-bottom: 40px;
+      border-bottom: 1.5px solid var(--border);
+    }
+
+    .page-kicker {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+
+    .page-title {
+      font-size: clamp(2.2rem, 4vw, 3.2rem);
+      font-weight: 800;
+      line-height: 1.08;
+      letter-spacing: -0.035em;
+      margin-bottom: 20px;
+    }
+
+    .page-title span { color: var(--accent); }
+
+    .page-desc {
+      font-size: 15px;
+      line-height: 1.7;
+      color: var(--muted);
+      max-width: 480px;
+    }
+
+    /* ---- SECTION ---- */
+    .section {
+      margin-bottom: 64px;
+      animation: rise 0.5s ease both;
+    }
+
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .section-label {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 28px;
+    }
+
+    .section-num {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--paper);
+      background: var(--ink);
+      padding: 3px 8px;
+      border-radius: 4px;
+      letter-spacing: 0.05em;
+    }
+
+    .section-title {
+      font-size: 1.4rem;
+      font-weight: 700;
+      letter-spacing: -0.025em;
+    }
+
+    .section-rule {
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    /* ---- CIPHER BLOCK ---- */
+    .cipher-block {
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      margin-bottom: 24px;
+      background: white;
+      transition: box-shadow 0.2s;
+    }
+
+    .cipher-block:hover {
+      box-shadow: 0 4px 24px rgba(0,0,0,0.07);
+    }
+
+    .cipher-head {
+      padding: 18px 24px;
+      border-bottom: 1.5px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--paper2);
+    }
+
+    .cipher-head-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .chip {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-weight: 500;
+    }
+
+    .chip.classic {
+      background: rgba(31, 79, 201, 0.1);
+      color: var(--accent2);
+      border: 1px solid rgba(31, 79, 201, 0.2);
+    }
+
+    .chip.rsa-chip {
+      background: rgba(201, 74, 31, 0.1);
+      color: var(--accent);
+      border: 1px solid rgba(201, 74, 31, 0.2);
+    }
+
+    .cipher-name {
+      font-weight: 700;
+      font-size: 15px;
+      letter-spacing: -0.01em;
+    }
+
+    .cipher-formula {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .cipher-body {
+      padding: 24px;
+    }
+
+    .body-text {
+      font-size: 13.5px;
+      line-height: 1.7;
+      color: var(--muted);
+      margin-bottom: 20px;
+    }
+
+    /* ---- ALGO BOX ---- */
+    .algo-box {
+      background: var(--paper);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--accent2);
+      border-radius: 6px;
+      padding: 14px 18px;
+      margin-bottom: 20px;
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .algo-box strong {
+      color: var(--ink);
+      font-weight: 600;
+    }
+
+    .algo-box ol {
+      margin: 10px 0 0 18px;
+    }
+
+    .algo-box li {
+      margin: 5px 0;
+      color: var(--ink);
+    }
+
+    /* ---- FORM ---- */
+    .field {
+      margin-bottom: 14px;
+    }
+
+    label.flabel {
+      display: block;
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--muted);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 7px;
+    }
+
+    textarea, input[type="number"] {
+      width: 100%;
+      background: var(--paper);
+      border: 1.5px solid var(--border);
+      border-radius: 7px;
+      padding: 11px 14px;
+      color: var(--ink);
+      font-family: var(--mono);
+      font-size: 13px;
+      resize: vertical;
+      min-height: 80px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      outline: none;
+    }
+
+    input[type="number"] {
+      min-height: unset;
+      height: 40px;
+    }
+
+    textarea:focus, input:focus {
+      border-color: var(--ink);
+      box-shadow: 0 0 0 3px rgba(10,10,10,0.08);
+    }
+
+    .key-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    /* ---- BUTTONS ---- */
+    .btn-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    button {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--sans);
+      font-weight: 600;
+      font-size: 13px;
+      border: none;
+      border-radius: 7px;
+      padding: 9px 16px;
+      cursor: pointer;
+      transition: all 0.15s;
+      letter-spacing: -0.01em;
+    }
+
+    button:active { transform: scale(0.96); }
+
+    .btn-primary {
+      background: var(--ink);
+      color: var(--paper);
+    }
+    .btn-primary:hover { background: #2a2a2a; }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--ink);
+      border: 1.5px solid var(--border);
+    }
+    .btn-secondary:hover {
+      border-color: var(--ink);
+      background: var(--paper2);
+    }
+
+    .btn-danger {
+      background: rgba(201, 74, 31, 0.08);
+      color: var(--accent);
+      border: 1.5px solid rgba(201, 74, 31, 0.2);
+    }
+    .btn-danger:hover { background: rgba(201, 74, 31, 0.14); }
+
+    /* ---- RESULT ---- */
+    .result-box {
+      margin-top: 14px;
+      border: 1.5px solid var(--border);
+      border-radius: 7px;
+      overflow: hidden;
+      transition: border-color 0.2s;
+    }
+
+    .result-box.has-result { border-color: var(--ink); }
+
+    .result-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 14px;
+      border-bottom: 1px solid var(--border);
+      background: var(--paper2);
+    }
+
+    .result-label {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--muted);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .copy-btn {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--muted);
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 3px 9px;
+      cursor: pointer;
+      letter-spacing: 0.05em;
+    }
+    .copy-btn:hover { color: var(--ink); background: white; }
+    .copy-btn.copied { color: var(--accent3); border-color: var(--accent3); }
+
+    .result-content {
+      padding: 14px;
+      font-family: var(--mono);
+      font-size: 12.5px;
+      line-height: 1.65;
+      color: var(--ink);
+      min-height: 50px;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    .result-content.empty {
+      color: var(--border);
+      font-style: italic;
+    }
+
+    /* ---- RSA KEY GRID ---- */
+    .rsa-key-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .key-chip {
+      background: var(--paper);
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      padding: 14px 12px;
+      text-align: center;
+    }
+
+    .key-chip .kc-label {
+      font-family: var(--mono);
+      font-size: 9px;
+      color: var(--muted);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    .key-chip .kc-val {
+      font-family: var(--mono);
+      font-size: 1.3rem;
+      font-weight: 600;
+      color: var(--ink);
+    }
+
+    .key-chip.pub .kc-val { color: var(--accent2); }
+    .key-chip.priv .kc-val { color: var(--accent); }
+
+    /* ---- DIVIDER ---- */
+    .divider {
+      height: 1.5px;
+      background: var(--border);
+      margin: 48px 0;
+    }
+
+    /* ---- SCROLLBAR ---- */
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: var(--paper); }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+    /* ---- RESPONSIVE ---- */
+    @media (max-width: 768px) {
+      .layout { grid-template-columns: 1fr; }
+      aside { position: relative; height: auto; border-right: none; border-bottom: 1.5px solid var(--border); padding: 24px 20px; }
+      main { padding: 30px 20px 60px; }
+      .rsa-key-grid { grid-template-columns: repeat(2, 1fr); }
+      .key-row { grid-template-columns: 1fr; }
+    }
+
+    /* Stagger section animations */
+    .section:nth-child(1) { animation-delay: 0.05s; }
+    .section:nth-child(2) { animation-delay: 0.1s; }
+    .cipher-block:nth-child(1) { animation: rise 0.4s 0.05s ease both; }
+    .cipher-block:nth-child(2) { animation: rise 0.4s 0.1s ease both; }
+    .cipher-block:nth-child(3) { animation: rise 0.4s 0.15s ease both; }
+    .cipher-block:nth-child(4) { animation: rise 0.4s 0.2s ease both; }
+  </style>
 </head>
-<body class="text-center">
-    <h1>ENCRYPTION AND DECRYPTION DEMO</h1>
-    
-    <p style="text-align: center; margin: 20px 0;">
-        <br><strong style="font-size: 35px;"> Royal University of Phnom Penh, Phnom Penh</strong><br>
-        <image src= "https://www.rupp.edu.kh/logo/rupp_logo.png" alt="RUPP Logo" style="width: 150px; margin: 20px 0;"><br>
-             28 february 2026<br><br>
-            <strong style="font-size: 20px;">submitted to : 
-            Mr. LIM Seyha</strong> (Mathematic Lecturer) <br><br>
-        <strong>by Team : </strong><br>
-        1. Kong borey 2. Sorn Sreyvy 3. Sok Engchhay 4. Sor sovanchhay <br>5. Tuch panha 6. Soy Rosa 7. Heng chanvireakyuth <br>
-    </p>
+<body>
+<div class="layout">
 
-    <p>This demonstration presents applications of number theory, including classical encryption-decryption methods and the RSA algorithm. In this report, I will describe the algorithm I developed and the work I have conducted.</p>
-
-    <h2 style="text-align: left;">1. Classical Cryptography</h2>
-
-    <h3 style="text-align: left; margin-left: 30px;">1.1 Caesar Cipher</h3>
-    
-    <p>One of the earliest and most well-known forms of cryptography was developed by Emperor Julius Caesar. During times of war, he needed a way to send secret messages to his generals. His solution was simple but effective: shift each letter in the alphabet by three positions. For example, the letter A becomes D, B becomes E, and so on. This technique came to be known as the <em>Caesar Cipher</em>.</p>
-
-    <div class="info-box">
-        <p>Emperor Julius Caesar made his messages secret by shifting each letter three positions forward in the alphabet. The algorithm to encrypt a message works like this:</p>
-        <ol style="text-align: left;">
-            <li><strong>Assign numbers to each letter:</strong> A → 00, B → 01, C → 02, ... Z → 25</li>
-            <li><strong>Convert the plaintext into numbers</strong></li>
-            <li><strong>Encrypt the numbers by adding 3 to each</strong></li>
-            <li><strong>Take the result modulo 26</strong></li>
-            <li><strong>Convert the numbers back to letters</strong></li>
-        </ol>
+  <!-- SIDEBAR -->
+  <aside>
+    <div class="logo-area">
+      <div class="logo-tag">RUPP · 2026</div>
+      <h1 class="logo-title">Crypto<em>graphy</em><br>Demo</h1>
     </div>
 
-    <h4>Caesar Cipher Demo</h4>
-    <div class="demo-section">
-        <label>Enter your text (Plain text or Cipher text):</label>
-        <textarea id="caesarInput"></textarea>
-        <button onclick="caesarEncrypt()">Encrypt</button>
-        <button onclick="caesarDecrypt()">Decrypt</button>
-        <div class="result" id="caesarResult">No Result</div>
+    <div class="sidebar-section">Classical</div>
+    <button class="nav-link active" onclick="navTo(event, 'caesar')">
+      <span class="nav-icon">1</span> Caesar Cipher
+    </button>
+    <button class="nav-link" onclick="navTo(event, 'shift')">
+      <span class="nav-icon">1.2</span> Shift Cipher
+    </button>
+    <button class="nav-link" onclick="navTo(event, 'affine')">
+      <span class="nav-icon">1.3</span> Affine Cipher
+    </button>
+    <button class="nav-link" onclick="navTo(event, 'transposition')">
+      <span class="nav-icon">1.4</span> Transposition
+    </button>
+
+    <div class="sidebar-section">2. RSA Cryptography</div>
+    <button class="nav-link" onclick="navTo(event, 'rsa-keygen')">
+      <span class="nav-icon">2.1</span> RSA Keygen
+    </button>
+    <button class="nav-link" onclick="navTo(event, 'rsa-enc')">
+      <span class="nav-icon">2.2</span> RSA Encrypt
+    </button>
+    <button class="nav-link" onclick="navTo(event, 'rsa-dec')">
+      <span class="nav-icon">2.3</span> RSA Decrypt
+    </button>
+
+    <div class="sidebar-footer">
+      <div class="team-list">
+        <strong>Team Members</strong>
+        Kong Borey · Sorn Sreyvy<br>
+        Sok Engchhay · Sor Sovanchhay<br>
+        Tuch Panha · Soy Rosa<br>
+        Heng Chanvireakyuth
+      </div>
+      <div class="prof-tag">Lec: Mr. LIM Seyha</div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main>
+    <div class="page-header">
+      <div class="page-kicker">Mathematics · Number Theory · 28 Feb 2026</div>
+      <h2 class="page-title">Encryption &<br><span>Decryption</span></h2>
+      <p class="page-desc">An interactive demonstration of number theory in cryptography — from classical substitution ciphers to the RSA public-key algorithm.</p>
     </div>
 
-    <h3 style="text-align: left; margin-left: 30px;">1.2 General Shift Cipher</h3>
-    <p>The General Shift Cipher is a more advanced version of the Caesar Cipher. Instead of a fixed shift of three positions, it allows for any integer value as the shift. This means that you can choose any number to shift the letters in the alphabet, making it more versatile and secure.</p>
+    <!-- CLASSICAL SECTION -->
+    <div class="section">
+      <div class="section-label">
+        <span class="section-num">01</span>
+        <h3 class="section-title">Classical Ciphers</h3>
+        <div class="section-rule"></div>
+      </div>
 
-    <h4>General Shift Cipher Demo</h4>
-    <div class="demo-section">
-        <label>Enter your text (Plain text or Cipher text):</label>
-        <textarea id="shiftInput"></textarea>
-        <label>Enter the key (No Need For Brute Force Attack):</label>
-        <input type="number" id="shiftKey" value="3">
-        <button onclick="shiftEncrypt()">Encrypt</button>
-        <button onclick="shiftDecrypt()">Decrypt</button>
-        <button onclick="shiftBruteForce()">Brute Force Attack</button>
-        <div class="result" id="shiftResult">No Result</div>
+      <!-- Caesar -->
+      <div id="caesar" class="cipher-block">
+        <div class="cipher-head">
+          <div class="cipher-head-left">
+            <span class="chip classic">Classic</span>
+            <span class="cipher-name">Caesar Cipher</span>
+          </div>
+          <span class="cipher-formula">key = 3</span>
+        </div>
+        <div class="cipher-body">
+          <p class="body-text">Julius Caesar's cipher shifts every letter exactly 3 positions forward — the foundation of substitution cryptography.</p>
+          <div class="algo-box">
+            <strong>Algorithm</strong>
+            <ol>
+              <li>Assign: A→0, B→1, … Z→25</li>
+              <li>Convert plaintext to numbers</li>
+              <li>Add 3, then take <strong>mod 26</strong></li>
+              <li>Convert back to letters</li>
+            </ol>
+          </div>
+          <div class="field">
+            <label class="flabel">Plaintext / Ciphertext</label>
+            <textarea id="caesarInput" placeholder="Enter message..."></textarea>
+          </div>
+          <div class="btn-row">
+            <button class="btn-primary" onclick="caesarEncrypt()">↑ Encrypt</button>
+            <button class="btn-secondary" onclick="caesarDecrypt()">↓ Decrypt</button>
+          </div>
+          <div class="result-box" id="caesarResultBox">
+            <div class="result-head">
+              <span class="result-label">Output</span>
+              <button class="copy-btn" onclick="copyResult('caesarResult', event)">Copy</button>
+            </div>
+            <div class="result-content empty" id="caesarResult">Result will appear here...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Shift -->
+      <div id="shift" class="cipher-block">
+        <div class="cipher-head">
+          <div class="cipher-head-left">
+            <span class="chip classic">Classic</span>
+            <span class="cipher-name">General Shift Cipher</span>
+          </div>
+          <span class="cipher-formula">E(x) = (x+k) mod 26</span>
+        </div>
+        <div class="cipher-body">
+          <p class="body-text">A generalization of Caesar where shift <em>k</em> can be any integer. Supports brute-force over all 26 key values.</p>
+          <div class="field">
+            <label class="flabel">Plaintext / Ciphertext</label>
+            <textarea id="shiftInput" placeholder="Enter message..."></textarea>
+          </div>
+          <div class="field">
+            <label class="flabel">Key (shift amount)</label>
+            <input type="number" id="shiftKey" value="3" min="0" max="25" />
+          </div>
+          <div class="btn-row">
+            <button class="btn-primary" onclick="shiftEncrypt()">↑ Encrypt</button>
+            <button class="btn-secondary" onclick="shiftDecrypt()">↓ Decrypt</button>
+            <button class="btn-danger" onclick="shiftBruteForce()">⚡ Brute Force</button>
+          </div>
+          <div class="result-box" id="shiftResultBox">
+            <div class="result-head">
+              <span class="result-label">Output</span>
+              <button class="copy-btn" onclick="copyResult('shiftResult', event)">Copy</button>
+            </div>
+            <div class="result-content empty" id="shiftResult">Result will appear here...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Affine -->
+      <div id="affine" class="cipher-block">
+        <div class="cipher-head">
+          <div class="cipher-head-left">
+            <span class="chip classic">Classic</span>
+            <span class="cipher-name">Affine Cipher</span>
+          </div>
+          <span class="cipher-formula">E(x) = (ax+b) mod 26</span>
+        </div>
+        <div class="cipher-body">
+          <p class="body-text">Combines multiplication and addition — two keys: <em>a</em> (must be coprime with 26) and <em>b</em> (additive shift). Decryption uses the modular inverse of <em>a</em>.</p>
+          <div class="field">
+            <label class="flabel">Plaintext / Ciphertext</label>
+            <textarea id="affineInput" placeholder="Enter message..."></textarea>
+          </div>
+          <div class="key-row">
+            <div class="field">
+              <label class="flabel">Key a — coprime to 26</label>
+              <input type="number" id="affineKeyA" value="5" />
+            </div>
+            <div class="field">
+              <label class="flabel">Key b — shift value</label>
+              <input type="number" id="affineKeyB" value="8" />
+            </div>
+          </div>
+          <div class="btn-row">
+            <button class="btn-primary" onclick="affineEncrypt()">↑ Encrypt</button>
+            <button class="btn-secondary" onclick="affineDecrypt()">↓ Decrypt</button>
+            <button class="btn-danger" onclick="affineBruteForce()">⚡ Brute Force</button>
+          </div>
+          <div class="result-box" id="affineResultBox">
+            <div class="result-head">
+              <span class="result-label">Output</span>
+              <button class="copy-btn" onclick="copyResult('affineResult', event)">Copy</button>
+            </div>
+            <div class="result-content empty" id="affineResult">Result will appear here...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Transposition -->
+      <div id="transposition" class="cipher-block">
+        <div class="cipher-head">
+          <div class="cipher-head-left">
+            <span class="chip classic">Classic</span>
+            <span class="cipher-name">Transposition Cipher</span>
+          </div>
+          <span class="cipher-formula">columnar rearrangement</span>
+        </div>
+        <div class="cipher-body">
+          <p class="body-text">Rearranges character positions rather than substituting them. The key sets the number of columns in the transposition grid.</p>
+          <div class="field">
+            <label class="flabel">Plaintext / Ciphertext</label>
+            <textarea id="transInput" placeholder="Enter message..."></textarea>
+          </div>
+          <div class="field">
+            <label class="flabel">Key (number of columns)</label>
+            <input type="number" id="transKey" value="4" min="2" max="20" />
+          </div>
+          <div class="btn-row">
+            <button class="btn-primary" onclick="transEncrypt()">↑ Encrypt</button>
+            <button class="btn-secondary" onclick="transDecrypt()">↓ Decrypt</button>
+          </div>
+          <div class="result-box" id="transResultBox">
+            <div class="result-head">
+              <span class="result-label">Output</span>
+              <button class="copy-btn" onclick="copyResult('transResult', event)">Copy</button>
+            </div>
+            <div class="result-content empty" id="transResult">Result will appear here...</div>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <h3 style="text-align: left; margin-left: 30px;">1.3 Affine Cipher</h3>
-    <p>The Affine Cipher is a more complex encryption method that combines both a shift and a multiplication operation. It uses two keys: one for the shift and another for the multiplication. The formula for encryption is E(x) = (ax + b) mod 26, where 'a' and 'b' are the keys, and 'x' is the numerical representation of the letter.</p>
+    <div class="divider"></div>
 
-    <h4>Affine Cipher Demo</h4>
-    <div class="demo-section">
-        <label>Enter your text (Plain text or Cipher text):</label>
-        <textarea id="affineInput"></textarea>
-        <label>Enter the key a:</label>
-        <input type="number" id="affineKeyA" value="5">
-        <label>Enter the key b:</label>
-        <input type="number" id="affineKeyB" value="8">
-        <button onclick="affineEncrypt()">Encrypt</button>
-        <button onclick="affineDecrypt()">Decrypt</button>
-        <button onclick="affineBruteForce()">Brute Force Attack</button>
-        <div class="result" id="affineResult">No Result</div>
+    <!-- RSA SECTION -->
+    <div class="section">
+      <div class="section-label">
+        <span class="section-num">02</span>
+        <h3 class="section-title">RSA Cryptography</h3>
+        <div class="section-rule"></div>
+      </div>
+
+      <p class="body-text" style="margin-bottom:28px;">RSA (Rivest–Shamir–Adleman, 1977) is an asymmetric algorithm relying on the practical difficulty of factoring the product of two large primes. It underpins most of modern secure internet communication.</p>
+
+      <!-- RSA Keygen -->
+      <div id="rsa-keygen" class="cipher-block">
+        <div class="cipher-head">
+          <div class="cipher-head-left">
+            <span class="chip rsa-chip">RSA</span>
+            <span class="cipher-name">Key Generation</span>
+          </div>
+          <span class="cipher-formula">n = p × q</span>
+        </div>
+        <div class="cipher-body">
+          <p class="body-text">Enter two distinct primes <em>p</em> and <em>q</em> to generate a public/private key pair. The modulus n = p × q and φ(n) = (p−1)(q−1).</p>
+          <div class="key-row">
+            <div class="field">
+              <label class="flabel">Prime p</label>
+              <input type="number" id="rsaP" value="61" />
+            </div>
+            <div class="field">
+              <label class="flabel">Prime q</label>
+              <input type="number" id="rsaQ" value="53" />
+            </div>
+          </div>
+          <div class="btn-row">
+            <button class="btn-primary" onclick="rsaKeygen()">🔑 Generate Keys</button>
+          </div>
+          <div class="rsa-key-grid" id="rsaKeygenGrid" style="display:none">
+            <div class="key-chip">
+              <div class="kc-label">Modulus n</div>
+              <div class="kc-val" id="rkg-n">—</div>
+            </div>
+            <div class="key-chip">
+              <div class="kc-label">Totient φ(n)</div>
+              <div class="kc-val" id="rkg-phi">—</div>
+            </div>
+            <div class="key-chip pub">
+              <div class="kc-label">Public e</div>
+              <div class="kc-val" id="rkg-e">—</div>
+            </div>
+            <div class="key-chip priv">
+              <div class="kc-label">Private d</div>
+              <div class="kc-val" id="rkg-d">—</div>
+            </div>
+          </div>
+          <div class="result-box" id="rsaKeygenResultBox" style="display:none">
+            <div class="result-head"><span class="result-label">Status</span></div>
+            <div class="result-content" id="rsaKeygenResult"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RSA Encrypt -->
+      <div id="rsa-enc" class="cipher-block">
+        <div class="cipher-head">
+          <div class="cipher-head-left">
+            <span class="chip rsa-chip">RSA</span>
+            <span class="cipher-name">Encryption</span>
+          </div>
+          <span class="cipher-formula">C = M^e mod n</span>
+        </div>
+        <div class="cipher-body">
+          <p class="body-text">Encrypt plaintext using the public key <em>e</em> and modulus <em>n</em>. Each letter is converted to its numeric position (A=0 … Z=25) and encrypted individually.</p>
+          <div class="field">
+            <label class="flabel">Plaintext</label>
+            <textarea id="rsaEncInput" placeholder="Enter message..."></textarea>
+          </div>
+          <div class="key-row">
+            <div class="field">
+              <label class="flabel">Public key e</label>
+              <input type="number" id="rsaE" value="17" />
+            </div>
+            <div class="field">
+              <label class="flabel">Modulus n</label>
+              <input type="number" id="rsaN" value="3233" />
+            </div>
+          </div>
+          <div class="btn-row">
+            <button class="btn-primary" onclick="rsaEncrypt()">↑ Encrypt</button>
+          </div>
+          <div class="result-box" id="rsaEncResultBox">
+            <div class="result-head">
+              <span class="result-label">Ciphertext (space-separated)</span>
+              <button class="copy-btn" onclick="copyResult('rsaEncResult', event)">Copy</button>
+            </div>
+            <div class="result-content empty" id="rsaEncResult">Result will appear here...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RSA Decrypt -->
+      <div id="rsa-dec" class="cipher-block">
+        <div class="cipher-head">
+          <div class="cipher-head-left">
+            <span class="chip rsa-chip">RSA</span>
+            <span class="cipher-name">Decryption</span>
+          </div>
+          <span class="cipher-formula">M = C^d mod n</span>
+        </div>
+        <div class="cipher-body">
+          <p class="body-text">Decrypt ciphertext using the private key <em>d</em> and modulus <em>n</em>. Paste the space-separated numeric ciphertext from the encryption step.</p>
+          <div class="field">
+            <label class="flabel">Ciphertext (space-separated numbers)</label>
+            <textarea id="rsaDecInput" placeholder="e.g. 2790 2283 2809 ..."></textarea>
+          </div>
+          <div class="key-row">
+            <div class="field">
+              <label class="flabel">Private key d</label>
+              <input type="number" id="rsaD" value="2753" />
+            </div>
+            <div class="field">
+              <label class="flabel">Modulus n</label>
+              <input type="number" id="rsaDecN" value="3233" />
+            </div>
+          </div>
+          <div class="btn-row">
+            <button class="btn-secondary" onclick="rsaDecrypt()">↓ Decrypt</button>
+          </div>
+          <div class="result-box" id="rsaDecResultBox">
+            <div class="result-head">
+              <span class="result-label">Plaintext</span>
+              <button class="copy-btn" onclick="copyResult('rsaDecResult', event)">Copy</button>
+            </div>
+            <div class="result-content empty" id="rsaDecResult">Result will appear here...</div>
+          </div>
+        </div>
+      </div>
+
     </div>
+  </main>
+</div>
 
-    <h3 style="text-align: left; margin-left: 30px;">1.4 Transposition Cipher</h3>
-    <p>In the fascinating world of cryptography, transposition ciphers stand out as one of the oldest and simplest forms of encryption. Rather than changing the actual letters or symbols (as substitution ciphers do), transposition ciphers rearrange the positions of the characters according to a specific system, creating a ciphertext that hides the original message.</p>
+<script>
+  // ---- NAV ----
+  function navTo(ev, id) {
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    document.querySelectorAll('.nav-link').forEach(b => b.classList.remove('active'));
+    (ev.currentTarget || ev.target).classList.add('active');
+  }
 
-    <h4>Transposition Cipher Demo</h4>
-    <div class="demo-section">
-        <label>Enter your text (Plain text or Cipher text):</label>
-        <textarea id="transInput"></textarea>
-        <label>Enter the key:</label>
-        <input type="number" id="transKey" value="4">
-        <button onclick="transEncrypt()">Encrypt</button>
-        <button onclick="transDecrypt()">Decrypt</button>
-        <div class="result" id="transResult">No Result</div>
-    </div>
+  // ---- RESULT HELPERS ----
+  function setResult(id, text, isError = false) {
+    const el = document.getElementById(id);
+    el.textContent = text;
+    el.classList.remove('empty');
+    el.style.color = isError ? '#c94a1f' : '';
+    el.closest('.result-box')?.classList.add('has-result');
+  }
 
-    <h2 style="text-align: left;">2. RSA</h2>
+  function copyResult(id, ev) {
+    const text = document.getElementById(id).textContent;
+    navigator.clipboard.writeText(text).then(() => {
+      const btn = ev?.target || document.activeElement;
+      if (btn) {
+        btn.textContent = '✓ Copied';
+        btn.classList.add('copied');
+        setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 1500);
+      }
+    });
+  }
 
-    <h3 style="text-align: left; margin-left: 30px;">2.1 RSA Cryptography</h3>
-    <p>RSA (Rivest-Shamir-Adleman) is a widely used asymmetric encryption algorithm that relies on the mathematical properties of prime numbers. It was invented in 1977 by Ron Rivest, Adi Shamir, and Leonard Adleman. RSA is based on the difficulty of factoring large composite numbers into their prime factors.</p>
+  // ---- CAESAR ----
+  function caesarEncrypt() { setResult('caesarResult', shiftCipher(document.getElementById('caesarInput').value.toUpperCase(), 3)); }
+  function caesarDecrypt() { setResult('caesarResult', shiftCipher(document.getElementById('caesarInput').value.toUpperCase(), -3)); }
 
-    <h4 style="text-align: left; margin-left: 30px;">2.1.1 RSA Keygen Demo</h4>
-    <div class="demo-section">
-        <label>Enter the first prime number p:</label>
-        <input type="number" id="rsaP" value="61">
-        <label>Enter the second prime number q:</label>
-        <input type="number" id="rsaQ" value="53">
-        <button onclick="rsaKeygen()">Generate Key</button>
-        <div class="result" id="rsaKeygenResult">No Result</div>
-    </div>
+  // ---- SHIFT ----
+  function shiftCipher(text, key) {
+    let r = '';
+    for (let c of text)
+      r += c.match(/[A-Z]/) ? String.fromCharCode((((c.charCodeAt(0)-65+key)%26)+26)%26+65) : c;
+    return r;
+  }
+  function shiftEncrypt() { setResult('shiftResult', shiftCipher(document.getElementById('shiftInput').value.toUpperCase(), parseInt(document.getElementById('shiftKey').value))); }
+  function shiftDecrypt() { setResult('shiftResult', shiftCipher(document.getElementById('shiftInput').value.toUpperCase(), -parseInt(document.getElementById('shiftKey').value))); }
+  function shiftBruteForce() {
+    const text = document.getElementById('shiftInput').value.toUpperCase();
+    let out = 'Brute Force — All 26 Keys:\n\n';
+    for (let k = 0; k < 26; k++) out += `Key ${String(k).padStart(2,'0')}: ${shiftCipher(text,-k)}\n`;
+    setResult('shiftResult', out);
+  }
 
-    <h4 style="text-align: left; margin-left: 30px;">2.1.2 RSA Encryption Demo</h4>
-    <div class="demo-section">
-        <label>Enter your text (Plain text or Cipher text):</label>
-        <textarea id="rsaEncInput"></textarea>
-        <label>Enter the public key (e):</label>
-        <input type="number" id="rsaE" value="17">
-        <label>Enter the modulus (n):</label>
-        <input type="number" id="rsaN" value="3233">
-        <button onclick="rsaEncrypt()">Encrypt</button>
-        <div class="result" id="rsaEncResult">No Result</div>
-    </div>
+  // ---- AFFINE ----
+  function gcd(a,b){while(b){[a,b]=[b,a%b];}return a;}
+  function modInverse(a,m){for(let x=1;x<m;x++)if((a*x)%m===1)return x;return 1;}
 
-    <h4 style="text-align: left; margin-left: 30px;">2.1.3 RSA Decryption Demo</h4>
-    <div class="demo-section">
-        <label>Enter your text (Plain text or Cipher text):</label>
-        <textarea id="rsaDecInput"></textarea>
-        <label>Enter the private key (d):</label>
-        <input type="number" id="rsaD" value="2753">
-        <label>Enter the modulus (n):</label>
-        <input type="number" id="rsaDecN" value="3233">
-        <button onclick="rsaDecrypt()">Decrypt</button>
-        <div class="result" id="rsaDecResult">No Result</div>
-    </div>
+  function affineEncrypt() {
+    const text=document.getElementById('affineInput').value.toUpperCase();
+    const a=parseInt(document.getElementById('affineKeyA').value);
+    const b=parseInt(document.getElementById('affineKeyB').value);
+    if(gcd(a,26)!==1){setResult('affineResult','Error: Key a must be coprime with 26. Valid: 1,3,5,7,9,11,15,17,19,21,23,25',true);return;}
+    let r='';
+    for(let c of text) r+=c.match(/[A-Z]/)?String.fromCharCode(((a*(c.charCodeAt(0)-65)+b)%26)+65):c;
+    setResult('affineResult',r);
+  }
+  function affineDecrypt() {
+    const text=document.getElementById('affineInput').value.toUpperCase();
+    const a=parseInt(document.getElementById('affineKeyA').value);
+    const b=parseInt(document.getElementById('affineKeyB').value);
+    if(gcd(a,26)!==1){setResult('affineResult','Error: Key a must be coprime with 26',true);return;}
+    const aInv=modInverse(a,26);
+    let r='';
+    for(let c of text) r+=c.match(/[A-Z]/)?String.fromCharCode(((aInv*(c.charCodeAt(0)-65-b+26*26))%26)+65):c;
+    setResult('affineResult',r);
+  }
+  function affineBruteForce() {
+    const text=document.getElementById('affineInput').value.toUpperCase();
+    const validA=[1,3,5,7,9,11,15,17,19,21,23,25];
+    let out='Brute Force — All Valid (a, b) Pairs:\n\n';
+    for(let a of validA){const aInv=modInverse(a,26);for(let b=0;b<26;b++){let dec='';for(let c of text)dec+=c.match(/[A-Z]/)?String.fromCharCode(((aInv*(c.charCodeAt(0)-65-b+26*26))%26)+65):c;out+=`a=${String(a).padStart(2)}, b=${String(b).padStart(2)}: ${dec}\n`;}}
+    setResult('affineResult',out);
+  }
 
+  // ---- TRANSPOSITION ----
+  function transEncrypt() {
+    const text=document.getElementById('transInput').value.replace(/\s/g,'').toUpperCase();
+    const key=parseInt(document.getElementById('transKey').value);
+    let r='';
+    for(let col=0;col<key;col++) for(let i=col;i<text.length;i+=key) r+=text[i];
+    setResult('transResult',r);
+  }
+  function transDecrypt() {
+    const text=document.getElementById('transInput').value.replace(/\s/g,'').toUpperCase();
+    const key=parseInt(document.getElementById('transKey').value);
+    const numRows=Math.ceil(text.length/key);
+    const numFullCols=text.length%key||key;
+    let grid=Array(numRows).fill(null).map(()=>Array(key).fill(''));
+    let idx=0;
+    for(let col=0;col<key;col++){const colLen=col<numFullCols?numRows:numRows-1;for(let row=0;row<colLen;row++)grid[row][col]=text[idx++];}
+    let r='';
+    for(let row=0;row<numRows;row++) for(let col=0;col<key;col++) r+=grid[row][col];
+    setResult('transResult',r.replace(/\s/g,''));
+  }
 
-    <p>Check my repository for codes: <a href="https://chhay999.github.io/ite-year-2-cipher/" target="_blank">https://chhay999.github.io/ite-year-2-cipher/</a></p>
+  // ---- RSA ----
+  function isPrime(n){if(n<=1)return false;if(n<=3)return true;if(n%2===0||n%3===0)return false;for(let i=5;i*i<=n;i+=6)if(n%i===0||n%(i+2)===0)return false;return true;}
+  function modPow(base,exp,mod){let r=1n;base=BigInt(base)%BigInt(mod);exp=BigInt(exp);mod=BigInt(mod);while(exp>0n){if(exp%2n===1n)r=(r*base)%mod;exp>>=1n;base=(base*base)%mod;}return Number(r);}
 
-    <script>
-        // Caesar Cipher Functions
-        function caesarEncrypt() {
-            const text = document.getElementById('caesarInput').value.toUpperCase();
-            const result = shiftCipher(text, 3);
-            document.getElementById('caesarResult').textContent = result;
-        }
+  function rsaKeygen() {
+    const p=parseInt(document.getElementById('rsaP').value);
+    const q=parseInt(document.getElementById('rsaQ').value);
+    if(!isPrime(p)||!isPrime(q)){document.getElementById('rsaKeygenResultBox').style.display='';setResult('rsaKeygenResult','Error: Both p and q must be prime numbers.',true);document.getElementById('rsaKeygenGrid').style.display='none';return;}
+    const n=p*q,phi=(p-1)*(q-1);
+    let e=2;while(e<phi){if(gcd(e,phi)===1)break;e++;}
+    const d=modInverse(e,phi);
+    document.getElementById('rkg-n').textContent=n;
+    document.getElementById('rkg-phi').textContent=phi;
+    document.getElementById('rkg-e').textContent=e;
+    document.getElementById('rkg-d').textContent=d;
+    document.getElementById('rsaKeygenGrid').style.display='grid';
+    document.getElementById('rsaKeygenResultBox').style.display='none';
+  }
 
-        function caesarDecrypt() {
-            const text = document.getElementById('caesarInput').value.toUpperCase();
-            const result = shiftCipher(text, -3);
-            document.getElementById('caesarResult').textContent = result;
-        }
+  function rsaEncrypt() {
+    const text=document.getElementById('rsaEncInput').value.toUpperCase();
+    const e=parseInt(document.getElementById('rsaE').value);
+    const n=parseInt(document.getElementById('rsaN').value);
+    let r=[];
+    for(let c of text) if(c.match(/[A-Z]/)) r.push(modPow(c.charCodeAt(0)-65,e,n));
+    setResult('rsaEncResult',r.join(' '));
+  }
 
-        // General Shift Cipher Functions
-        function shiftCipher(text, key) {
-            let result = '';
-            for (let i = 0; i < text.length; i++) {
-                const char = text[i];
-                if (char.match(/[A-Z]/)) {
-                    const code = ((char.charCodeAt(0) - 65 + key) % 26 + 26) % 26;
-                    result += String.fromCharCode(code + 65);
-                } else {
-                    result += char;
-                }
-            }
-            return result;
-        }
-
-        function shiftEncrypt() {
-            const text = document.getElementById('shiftInput').value.toUpperCase();
-            const key = parseInt(document.getElementById('shiftKey').value);
-            const result = shiftCipher(text, key);
-            document.getElementById('shiftResult').textContent = result;
-        }
-
-        function shiftDecrypt() {
-            const text = document.getElementById('shiftInput').value.toUpperCase();
-            const key = parseInt(document.getElementById('shiftKey').value);
-            const result = shiftCipher(text, -key);
-            document.getElementById('shiftResult').textContent = result;
-        }
-
-        function shiftBruteForce() {
-            const text = document.getElementById('shiftInput').value.toUpperCase();
-            let results = 'Brute Force Results:\n\n';
-            for (let k = 0; k < 26; k++) {
-                results += `Key ${k}: ${shiftCipher(text, -k)}\n`;
-            }
-            document.getElementById('shiftResult').textContent = results;
-        }
-
-        // Affine Cipher Functions
-        function gcd(a, b) {
-            while (b !== 0) {
-                let temp = b;
-                b = a % b;
-                a = temp;
-            }
-            return a;
-        }
-
-        function modInverse(a, m) {
-            for (let x = 1; x < m; x++) {
-                if ((a * x) % m === 1) return x;
-            }
-            return 1;
-        }
-
-        function affineEncrypt() {
-            const text = document.getElementById('affineInput').value.toUpperCase();
-            const a = parseInt(document.getElementById('affineKeyA').value);
-            const b = parseInt(document.getElementById('affineKeyB').value);
-            
-            if (gcd(a, 26) !== 1) {
-                document.getElementById('affineResult').textContent = 'Error: Key a must be coprime with 26';
-                return;
-            }
-
-            let result = '';
-            for (let i = 0; i < text.length; i++) {
-                const char = text[i];
-                if (char.match(/[A-Z]/)) {
-                    const x = char.charCodeAt(0) - 65;
-                    const encrypted = (a * x + b) % 26;
-                    result += String.fromCharCode(encrypted + 65);
-                } else {
-                    result += char;
-                }
-            }
-            document.getElementById('affineResult').textContent = result;
-        }
-
-        function affineDecrypt() {
-            const text = document.getElementById('affineInput').value.toUpperCase();
-            const a = parseInt(document.getElementById('affineKeyA').value);
-            const b = parseInt(document.getElementById('affineKeyB').value);
-            
-            if (gcd(a, 26) !== 1) {
-                document.getElementById('affineResult').textContent = 'Error: Key a must be coprime with 26';
-                return;
-            }
-
-            const aInv = modInverse(a, 26);
-            let result = '';
-            for (let i = 0; i < text.length; i++) {
-                const char = text[i];
-                if (char.match(/[A-Z]/)) {
-                    const y = char.charCodeAt(0) - 65;
-                    const decrypted = (aInv * (y - b + 26)) % 26;
-                    result += String.fromCharCode(decrypted + 65);
-                } else {
-                    result += char;
-                }
-            }
-            document.getElementById('affineResult').textContent = result;
-        }
-
-        function affineBruteForce() {
-            const text = document.getElementById('affineInput').value.toUpperCase();
-            const validA = [1, 3, 5, 7, 9, 11, 15, 17, 19, 21, 23, 25];
-            let results = 'Brute Force Results:\n\n';
-            
-            for (let a of validA) {
-                for (let b = 0; b < 26; b++) {
-                    const aInv = modInverse(a, 26);
-                    let decrypted = '';
-                    for (let i = 0; i < text.length; i++) {
-                        const char = text[i];
-                        if (char.match(/[A-Z]/)) {
-                            const y = char.charCodeAt(0) - 65;
-                            const dec = (aInv * (y - b + 26)) % 26;
-                            decrypted += String.fromCharCode(dec + 65);
-                        } else {
-                            decrypted += char;
-                        }
-                    }
-                    results += `a=${a}, b=${b}: ${decrypted}\n`;
-                }
-            }
-            document.getElementById('affineResult').textContent = results;
-        }
-
-        // Transposition Cipher Functions
-        function transEncrypt() {
-            const text = document.getElementById('transInput').value.replace(/\s/g, '').toUpperCase();
-            const key = parseInt(document.getElementById('transKey').value);
-            
-            let result = '';
-            for (let col = 0; col < key; col++) {
-                for (let i = col; i < text.length; i += key) {
-                    result += text[i];
-                }
-            }
-            document.getElementById('transResult').textContent = result;
-        }
-
-        function transDecrypt() {
-            const text = document.getElementById('transInput').value.replace(/\s/g, '').toUpperCase();
-            const key = parseInt(document.getElementById('transKey').value);
-            
-            const numRows = Math.ceil(text.length / key);
-            const numFullCols = text.length % key || key;
-            
-            let grid = Array(numRows).fill().map(() => Array(key).fill(''));
-            let idx = 0;
-            
-            for (let col = 0; col < key; col++) {
-                const colLen = col < numFullCols ? numRows : numRows - 1;
-                for (let row = 0; row < colLen; row++) {
-                    grid[row][col] = text[idx++];
-                }
-            }
-            
-            let result = '';
-            for (let row = 0; row < numRows; row++) {
-                for (let col = 0; col < key; col++) {
-                    result += grid[row][col];
-                }
-            }
-            document.getElementById('transResult').textContent = result.replace(/\s/g, '');
-        }
-
-        // RSA Functions
-        function isPrime(n) {
-            if (n <= 1) return false;
-            if (n <= 3) return true;
-            if (n % 2 === 0 || n % 3 === 0) return false;
-            for (let i = 5; i * i <= n; i += 6) {
-                if (n % i === 0 || n % (i + 2) === 0) return false;
-            }
-            return true;
-        }
-
-        function rsaKeygen() {
-            const p = parseInt(document.getElementById('rsaP').value);
-            const q = parseInt(document.getElementById('rsaQ').value);
-            
-            if (!isPrime(p) || !isPrime(q)) {
-                document.getElementById('rsaKeygenResult').textContent = 'Error: Both p and q must be prime numbers';
-                return;
-            }
-            
-            const n = p * q;
-            const phi = (p - 1) * (q - 1);
-            
-            let e = 2;
-            while (e < phi) {
-                if (gcd(e, phi) === 1) break;
-                e++;
-            }
-            
-            const d = modInverse(e, phi);
-            
-            const result = `n = ${n}\nφ(n) = ${phi}\nPublic Key (e) = ${e}\nPrivate Key (d) = ${d}`;
-            document.getElementById('rsaKeygenResult').textContent = result;
-        }
-
-        function modPow(base, exp, mod) {
-            let result = 1;
-            base = base % mod;
-            while (exp > 0) {
-                if (exp % 2 === 1) {
-                    result = (result * base) % mod;
-                }
-                exp = Math.floor(exp / 2);
-                base = (base * base) % mod;
-            }
-            return result;
-        }
-
-        function rsaEncrypt() {
-            const text = document.getElementById('rsaEncInput').value.toUpperCase();
-            const e = parseInt(document.getElementById('rsaE').value);
-            const n = parseInt(document.getElementById('rsaN').value);
-            
-            let result = [];
-            for (let i = 0; i < text.length; i++) {
-                const char = text[i];
-                if (char.match(/[A-Z]/)) {
-                    const m = char.charCodeAt(0) - 65;
-                    const c = modPow(m, e, n);
-                    result.push(c);
-                }
-            }
-            document.getElementById('rsaEncResult').textContent = result.join(' ');
-        }
-
-        function rsaDecrypt() {
-            const text = document.getElementById('rsaDecInput').value;
-            const d = parseInt(document.getElementById('rsaD').value);
-            const n = parseInt(document.getElementById('rsaDecN').value);
-            
-            const ciphers = text.split(' ').map(x => parseInt(x));
-            let result = '';
-            
-            for (let c of ciphers) {
-                if (!isNaN(c)) {
-                    const m = modPow(c, d, n);
-                    result += String.fromCharCode(m + 65);
-                }
-            }
-            document.getElementById('rsaDecResult').textContent = result;
-        }
-    </script>
+  function rsaDecrypt() {
+    const text=document.getElementById('rsaDecInput').value;
+    const d=parseInt(document.getElementById('rsaD').value);
+    const n=parseInt(document.getElementById('rsaDecN').value);
+    let r='';
+    for(let c of text.split(' ')){const num=parseInt(c);if(!isNaN(num))r+=String.fromCharCode(modPow(num,d,n)+65);}
+    setResult('rsaDecResult',r);
+  }
+</script>
 </body>
 </html>
